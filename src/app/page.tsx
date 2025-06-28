@@ -120,7 +120,7 @@ const AppHeader = () => {
             </Avatar>
           </>
         ) : (
-          <Button variant="primary" onClick={() => signIn('google')}>
+          <Button variant="default" onClick={() => signIn('google')}>
             Sync with Google Classroom
           </Button>
         )}
@@ -160,7 +160,7 @@ const PendingReviewsSection = () => (
                 <Progress value={40} className="h-2 mb-4 [&>div]:bg-orange-400" />
                 <div className="flex justify-end gap-2">
                     <Button variant="outline">View Details</Button>
-                    <Button variant="primary">Adjust Settings</Button>
+                    <Button>Adjust Settings</Button>
                 </div>
             </CardContent>
         </Card>

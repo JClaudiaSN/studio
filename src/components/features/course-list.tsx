@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import {
   Card,
   CardContent,
@@ -94,7 +95,9 @@ export function CourseList() {
               <TableCell className="font-medium">{course.name}</TableCell>
               <TableCell>{course.section || 'N/A'}</TableCell>
               <TableCell className="text-right">
-                <Button variant="outline" size="sm">Select Course</Button>
+                <Link href={`/course/${course.id}`}>
+                  <Button variant="outline" size="sm">Select Course</Button>
+                </Link>
               </TableCell>
             </TableRow>
           ))}
