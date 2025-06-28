@@ -1,5 +1,6 @@
 "use client"
 import React, { useState } from 'react';
+import { useSession, signIn, signOut } from "next-auth/react";
 import {
   SidebarProvider,
   Sidebar,
@@ -39,6 +40,7 @@ import {
   Users,
   Settings,
   ArrowRight,
+  LogIn,
 } from 'lucide-react';
 
 const AppSidebar = () => (
@@ -87,33 +89,45 @@ const AppSidebar = () => (
   </Sidebar>
 );
 
-const AppHeader = () => (
+const AppHeader = () => {
+  const { data: session, status } = useSession();
+
+  return (
     <header className="flex h-16 items-center justify-between border-b bg-background px-4 md:px-6">
-    <div className="flex items-center gap-4">
-      <SidebarTrigger className="md:hidden" />
-      <h1 className="text-xl font-semibold text-muted-foreground">dashboard</h1>
-    </div>
-    <div className="flex-1 max-w-xl mx-4">
-       <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search..." className="w-full pl-9" />
-        </div>
-    </div>
-    <div className="flex items-center gap-4">
-      <Button variant="primary">
-        Sync
-      </Button>
-      <Button variant="ghost" size="icon">
-        <Bell className="h-5 w-5" />
-        <span className="sr-only">Notifications</span>
-      </Button>
-      <Avatar>
-        <AvatarImage src="https://placehold.co/100x100.png" alt="Educator" data-ai-hint="person portrait"/>
-        <AvatarFallback>ED</AvatarFallback>
-      </Avatar>
-    </div>
-  </header>
-);
+      <div className="flex items-center gap-4">
+        <SidebarTrigger className="md:hidden" />
+        <h1 className="text-xl font-semibold text-muted-foreground">dashboard</h1>
+      </div>
+      <div className="flex-1 max-w-xl mx-4">
+        <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Search..." className="w-full pl-9" />
+          </div>
+      </div>
+      <div className="flex items-center gap-4">
+        {status === "authenticated" ? (
+          <>
+            <Button variant="outline" onClick={() => signOut()}>
+              Sign Out
+            </Button>
+            <Button variant="ghost" size="icon">
+              <Bell className="h-5 w-5" />
+              <span className="sr-only">Notifications</span>
+            </Button>
+            <Avatar>
+              <AvatarImage src={session.user?.image || `https://placehold.co/100x100.png`} alt={session.user?.name || "Educator"} data-ai-hint="person portrait"/>
+              <AvatarFallback>{session.user?.name?.charAt(0) || 'U'}</AvatarFallback>
+            </Avatar>
+          </>
+        ) : (
+          <Button variant="primary" onClick={() => signIn('google')}>
+            Sync with Google Classroom
+          </Button>
+        )}
+      </div>
+    </header>
+  );
+};
 
 const CourseAccessibilityStatusCard = () => (
   <Card>
@@ -262,24 +276,46 @@ const AssistantCard = () => (
 )
 
 export default function DashboardPage() {
+  const { data: session, status } = useSession();
+
+  if (status === "loading") {
+    return (
+        <div className="flex items-center justify-center h-screen">
+            <p>Loading...</p>
+        </div>
+    )
+  }
+
   return (
     <SidebarProvider defaultOpen={true}>
       <AppSidebar />
       <SidebarInset>
         <AppHeader />
         <main className="p-4 sm:p-6 lg:p-8">
-          <h1 className="text-2xl font-bold mb-6">Google Classroom</h1>
-           <div className="grid gap-6 xl:grid-cols-3">
-                <div className="xl:col-span-2 space-y-6">
-                    <CourseAccessibilityStatusCard />
-                    <h2 className="font-bold text-lg">Pending Reviews</h2>
-                    <PendingReviewsSection />
-                </div>
-                <div className="space-y-6">
-                    <AccessibilityPreferencesCard />
-                    <AssistantCard />
-                </div>
-           </div>
+          {status === "authenticated" ? (
+            <>
+              <h1 className="text-2xl font-bold mb-6">Google Classroom</h1>
+              <div className="grid gap-6 xl:grid-cols-3">
+                  <div className="xl:col-span-2 space-y-6">
+                      <CourseAccessibilityStatusCard />
+                      <h2 className="font-bold text-lg">Pending Reviews</h2>
+                      <PendingReviewsSection />
+                  </div>
+                  <div className="space-y-6">
+                      <AccessibilityPreferencesCard />
+                      <AssistantCard />
+                  </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-[calc(100vh-10rem)] gap-4 text-center">
+                <h2 className="text-2xl font-bold">Welcome to A11yCourseGen AI</h2>
+                <p className="text-muted-foreground">Please sign in with your Google account to sync with Google Classroom and start creating accessible course materials.</p>
+                <Button onClick={() => signIn('google')}>
+                    <LogIn className="mr-2 h-4 w-4" /> Sign In with Google
+                </Button>
+            </div>
+          )}
         </main>
       </SidebarInset>
     </SidebarProvider>
