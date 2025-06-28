@@ -36,8 +36,8 @@ export function AudioSummaryGenerator({ courseId }: { courseId: string }) {
     if (!imageDataUri || !description) {
       toast({
         title: 'Missing Information',
-        description: 'Please upload a chart/diagram and provide a description.',
-        variant: 'destructive',
+ description: 'Por favor, sube un gráfico/diagrama y proporciona una descripción.',
+ variant: 'destructive',
       });
       return;
     }
@@ -49,8 +49,8 @@ export function AudioSummaryGenerator({ courseId }: { courseId: string }) {
     } catch (error) {
       console.error(error);
       toast({
-        title: 'Error Generating Audio',
-        description: 'Something went wrong. Please try again.',
+ title: 'Error al generar audio',
+ description: 'Algo salió mal. Inténtalo de nuevo.',
         variant: 'destructive',
       });
     } finally {
@@ -77,8 +77,8 @@ export function AudioSummaryGenerator({ courseId }: { courseId: string }) {
       }
 
       toast({
-        title: "Published!",
-        description: "The audio summary has been published to your course."
+ title: "¡Publicado!",
+ description: "El resumen de audio se ha publicado en tu curso."
       })
     } catch (error: any) {
       console.error(error);
@@ -95,8 +95,8 @@ export function AudioSummaryGenerator({ courseId }: { courseId: string }) {
   return (
     <Card className="w-full shadow-md hover:shadow-lg transition-shadow duration-300">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2"><Mic className="text-primary" /> Audio Summary Creation</CardTitle>
-        <CardDescription>Generate audio summaries for charts, diagrams, and other visual content.</CardDescription>
+        <CardTitle className="flex items-center gap-2"><Mic className="text-primary" /> Generador de Resúmenes de Audio</CardTitle>
+        <CardDescription>Genera resúmenes para tu contenido de audio usando IA.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
@@ -109,7 +109,7 @@ export function AudioSummaryGenerator({ courseId }: { courseId: string }) {
           </div>
         )}
         <div className="space-y-2">
-          <Label htmlFor="chart-description">Description & Key Insights</Label>
+          <Label htmlFor="chart-description">Descripción y Puntos Clave</Label>
           <Textarea
             id="chart-description"
             placeholder="Describe the chart and what students should learn from it..."
@@ -121,7 +121,7 @@ export function AudioSummaryGenerator({ courseId }: { courseId: string }) {
         {isLoading && <Skeleton className="w-full h-14 rounded-md" />}
         {!isLoading && audioDataUri && (
           <div>
-            <Label>Generated Audio Summary</Label>
+            <Label>Resumen de Audio Generado</Label>
             <audio src={audioDataUri} controls className="w-full mt-2" />
           </div>
         )}
@@ -129,11 +129,11 @@ export function AudioSummaryGenerator({ courseId }: { courseId: string }) {
       <CardFooter className="flex justify-between">
         <Button onClick={handleGenerateSummary} disabled={!imageDataUri || !description || isLoading || isPublishing}>
           <Sparkles className="mr-2 h-4 w-4" />
-          {isLoading ? 'Generating...' : 'Generate Audio'}
+          {isLoading ? 'Generando...' : 'Generar Audio'}
         </Button>
         <Button onClick={handlePublish} disabled={!audioDataUri || isLoading || isPublishing}>
             <Send className="mr-2 h-4 w-4" /> 
-            {isPublishing ? 'Publishing...' : 'Publish'}
+            {isPublishing ? 'Publicando...' : 'Publicar'}
         </Button>
       </CardFooter>
     </Card>

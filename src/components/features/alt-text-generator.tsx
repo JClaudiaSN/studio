@@ -35,8 +35,8 @@ export function AltTextGenerator({ courseId }: { courseId: string }) {
     if (!imageDataUri) {
       toast({
         title: 'No Image Selected',
-        description: 'Please upload an image first.',
-        variant: 'destructive',
+ description: 'Por favor, sube una imagen primero.',
+ variant: 'destructive',
       });
       return;
     }
@@ -48,8 +48,8 @@ export function AltTextGenerator({ courseId }: { courseId: string }) {
       console.error(error);
       toast({
         title: 'Error Generating Alt Text',
-        description: 'Something went wrong. Please try again.',
-        variant: 'destructive',
+ description: 'Algo salió mal. Por favor, inténtalo de nuevo.',
+ variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -74,8 +74,8 @@ export function AltTextGenerator({ courseId }: { courseId: string }) {
       }
 
       toast({
-        title: "Published!",
-        description: "The image and its alt text have been published to your course."
+ title: "¡Publicado!",
+ description: "La imagen y su texto alternativo han sido publicados en tu curso."
       });
     } catch (error: any) {
       console.error(error);
@@ -92,8 +92,8 @@ export function AltTextGenerator({ courseId }: { courseId: string }) {
   return (
     <Card className="w-full shadow-md hover:shadow-lg transition-shadow duration-300">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2"><ImageIcon className="text-primary" /> Image Alt-Text Generation</CardTitle>
-        <CardDescription>Upload an image and our AI will generate a descriptive alt-text for accessibility.</CardDescription>
+        <CardTitle className="flex items-center gap-2"><ImageIcon className="text-primary" /> Generador de Texto Alternativo para Imágenes</CardTitle>
+        <CardDescription>Sube una imagen y nuestra IA generará un texto alternativo descriptivo para la accesibilidad.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
@@ -108,7 +108,7 @@ export function AltTextGenerator({ courseId }: { courseId: string }) {
         {isLoading && <Skeleton className="w-full h-24 rounded-md" />}
         {!isLoading && (altText || imageDataUri) && (
           <div className="space-y-2">
-            <Label htmlFor="alt-text-output">AI-Generated Alt Text (Editable)</Label>
+            <Label htmlFor="alt-text-output">Texto Alternativo Generado por IA (Editable)</Label>
             <Textarea
               id="alt-text-output"
               placeholder="AI-generated alt text will appear here..."
@@ -122,11 +122,11 @@ export function AltTextGenerator({ courseId }: { courseId: string }) {
       <CardFooter className="flex justify-between">
         <Button onClick={handleGenerateAltText} disabled={!imageDataUri || isLoading || isPublishing}>
           <Sparkles className="mr-2 h-4 w-4" />
-          {isLoading ? 'Generating...' : 'Generate Alt Text'}
+          {isLoading ? 'Generando...' : 'Generar Texto Alternativo'}
         </Button>
         <Button onClick={handlePublish} disabled={!altText || isLoading || isPublishing}>
             <Send className="mr-2 h-4 w-4" />
-            {isPublishing ? 'Publishing...' : 'Publish'}
+            {isPublishing ? 'Publicando...' : 'Publicar'}
         </Button>
       </CardFooter>
     </Card>

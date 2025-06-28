@@ -19,8 +19,8 @@ export function ContentStructuringTool() {
   const handleGetSuggestions = async () => {
     if (!content) {
       toast({
-        title: 'No Content Provided',
-        description: 'Please enter some course content to analyze.',
+        title: 'No se proporcionó contenido',
+        description: 'Por favor, introduce el contenido del curso para analizar.',
         variant: 'destructive',
       });
       return;
@@ -33,8 +33,8 @@ export function ContentStructuringTool() {
     } catch (error) {
       console.error(error);
       toast({
-        title: 'Error Getting Suggestions',
-        description: 'Something went wrong. Please try again.',
+        title: 'Error al obtener sugerencias',
+        description: 'Algo salió mal. Por favor, inténtalo de nuevo.',
         variant: 'destructive',
       });
     } finally {
@@ -44,8 +44,8 @@ export function ContentStructuringTool() {
 
   const handlePublish = () => {
     toast({
-      title: "Published!",
-      description: "The structured content has been published to your course."
+      title: "¡Publicado!",
+      description: "El contenido estructurado ha sido publicado en tu curso."
     })
   }
 
@@ -53,14 +53,14 @@ export function ContentStructuringTool() {
     <Card className="w-full shadow-md hover:shadow-lg transition-shadow duration-300">
       <CardHeader>
         <CardTitle className="flex items-center gap-2"><FileText className="text-primary" /> Content Structuring Suggestions</CardTitle>
-        <CardDescription>Optimize your text content for screen readers with AI-powered structural improvements.</CardDescription>
+        <CardDescription>Optimiza tu contenido de texto para lectores de pantalla con mejoras estructurales impulsadas por IA.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="course-content">Your Course Content</Label>
           <Textarea
             id="course-content"
-            placeholder="Paste your course content here..."
+            placeholder="Pega aquí el contenido de tu curso..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={6}
@@ -69,7 +69,7 @@ export function ContentStructuringTool() {
         {isLoading && <Skeleton className="w-full h-32 rounded-md" />}
         {!isLoading && suggestions && (
           <div className="space-y-2">
-            <Label htmlFor="ai-suggestions">AI Suggestions (Editable)</Label>
+            <Label htmlFor="ai-suggestions">Sugerencias de IA (Editables)</Label>
             <Textarea
               id="ai-suggestions"
               value={suggestions}
@@ -82,11 +82,11 @@ export function ContentStructuringTool() {
       </CardContent>
       <CardFooter className="flex justify-between">
         <Button onClick={handleGetSuggestions} disabled={!content || isLoading}>
-          <Sparkles className="mr-2 h-4 w-4" />
-          {isLoading ? 'Analyzing...' : 'Get Suggestions'}
+ <Sparkles className="mr-2 h-4 w-4" />
+ {isLoading ? 'Analizando...' : 'Obtener Sugerencias'}
         </Button>
         <Button onClick={handlePublish} disabled={!suggestions}>
-            <Send className="mr-2 h-4 w-4" /> Publish
+ <Send className="mr-2 h-4 w-4" /> Publicar
         </Button>
       </CardFooter>
     </Card>
