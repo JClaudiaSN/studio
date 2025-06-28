@@ -55,7 +55,7 @@ const prompt = ai.definePrompt({
   The audio summary should be clear, concise, and easy to understand.
   It should focus on the most important information and use descriptive language to help the student visualize the content.
   Speak it in a single speaker's voice, since this is a single piece of information.
-  Your response should be in text format; I will use another model to convert this into audio.
+  Your response should be in text format in spanish language; I will use another model to convert this into audio. ALWAYS generate answers in SPANISH.
   `,
 });
 
