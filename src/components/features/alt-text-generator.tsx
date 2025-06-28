@@ -12,10 +12,11 @@ import { generateAltText } from '@/ai/flows/image-alt-text-generation';
 import { ImageIcon, Sparkles, Send } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export function AltTextGenerator() {
+export function AltTextGenerator({ courseId }: { courseId: string }) {
   const [imageDataUri, setImageDataUri] = useState<string | null>(null);
   const [altText, setAltText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const { toast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,11 +56,37 @@ export function AltTextGenerator() {
     }
   };
   
-  const handlePublish = () => {
-    toast({
-      title: "Published!",
-      description: "The image and its alt text have been published to your course."
-    })
+  const handlePublish = async () => {
+    if (!imageDataUri || !altText) return;
+    setIsPublishing(true);
+    try {
+      const response = await fetch(`/api/classroom/courses/${courseId}/materials`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageDataUri, altText }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to publish material');
+      }
+
+      toast({
+        title: "Published!",
+        description: "The image and its alt text have been published to your course."
+      });
+    } catch (error: any) {
+      console.error(error);
+      toast({
+        title: 'Error Publishing',
+        description: error.message || 'Something went wrong. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsPublishing(false);
+    }
   }
 
   return (
@@ -93,12 +120,13 @@ export function AltTextGenerator() {
         )}
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button onClick={handleGenerateAltText} disabled={!imageDataUri || isLoading}>
+        <Button onClick={handleGenerateAltText} disabled={!imageDataUri || isLoading || isPublishing}>
           <Sparkles className="mr-2 h-4 w-4" />
           {isLoading ? 'Generating...' : 'Generate Alt Text'}
         </Button>
-        <Button onClick={handlePublish} disabled={!altText}>
-            <Send className="mr-2 h-4 w-4" /> Publish
+        <Button onClick={handlePublish} disabled={!altText || isLoading || isPublishing}>
+            <Send className="mr-2 h-4 w-4" />
+            {isPublishing ? 'Publishing...' : 'Publish'}
         </Button>
       </CardFooter>
     </Card>

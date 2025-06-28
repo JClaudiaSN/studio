@@ -156,7 +156,7 @@ export default function CoursePage({ params }: { params: { courseId: string } })
                         <p className="text-muted-foreground">Use these AI-powered tools to create accessible materials for course: {params.courseId}</p>
                     </div>
                     <div className="grid gap-8 grid-cols-1 md:grid-cols-2">
-                        <AltTextGenerator />
+                        <AltTextGenerator courseId={params.courseId} />
                         <ContentStructuringTool />
                         <AudioSummaryGenerator />
                     </div>

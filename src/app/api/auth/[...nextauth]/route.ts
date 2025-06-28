@@ -14,6 +14,7 @@ export const authOptions: NextAuthOptions = {
             'https://www.googleapis.com/auth/userinfo.profile',
             'https://www.googleapis.com/auth/classroom.courses.readonly',
             'https://www.googleapis.com/auth/classroom.coursework.materials',
+            'https://www.googleapis.com/auth/drive.file',
           ].join(' '),
           prompt: 'consent',
           access_type: 'offline',
