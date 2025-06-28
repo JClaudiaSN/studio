@@ -20,7 +20,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
@@ -42,6 +41,7 @@ import {
   ArrowRight,
   LogIn,
 } from 'lucide-react';
+import { CourseList } from '@/components/features/course-list';
 
 const AppSidebar = () => (
   <Sidebar>
@@ -128,54 +128,6 @@ const AppHeader = () => {
     </header>
   );
 };
-
-const CourseAccessibilityStatusCard = () => (
-  <Card>
-    <CardHeader>
-      <CardTitle>Course Accessibility Status</CardTitle>
-      <CardDescription>Educators</CardDescription>
-    </CardHeader>
-    <CardContent>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Current Accessibility</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Checkbox id="compliance" />
-              <label htmlFor="compliance" className="font-medium">Compliance</label>
-            </div>
-            <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-orange-400" />
-                <span className="text-sm text-muted-foreground">10 open</span>
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Checkbox id="souse" defaultChecked/>
-              <label htmlFor="souse" className="font-medium">Source</label>
-            </div>
-            <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-green-500" />
-                <span className="text-sm text-muted-foreground">Sourced</span>
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Checkbox id="ares" />
-              <label htmlFor="ares" className="font-medium">Ares</label>
-            </div>
-            <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-orange-400" />
-                <span className="text-sm text-muted-foreground">To Do</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </CardContent>
-  </Card>
-);
 
 const PendingReviewsSection = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -264,8 +216,10 @@ const AssistantCard = () => (
                     </div>
                 </div>
                  <div className="flex items-center gap-2">
-                    <Checkbox id="audio-desc" />
-                    <label htmlFor="audio-desc">Audio Descriptions</label>
+                     <div className="flex items-center gap-3">
+                         <Switch id="audio-desc" />
+                         <label htmlFor="audio-desc">Audio Descriptions</label>
+                     </div>
                 </div>
             </div>
             <Button variant="link" className="self-end p-0 h-auto">
@@ -297,7 +251,7 @@ export default function DashboardPage() {
               <h1 className="text-2xl font-bold mb-6">Google Classroom</h1>
               <div className="grid gap-6 xl:grid-cols-3">
                   <div className="xl:col-span-2 space-y-6">
-                      <CourseAccessibilityStatusCard />
+                      <CourseList />
                       <h2 className="font-bold text-lg">Pending Reviews</h2>
                       <PendingReviewsSection />
                   </div>
