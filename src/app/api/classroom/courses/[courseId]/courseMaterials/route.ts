@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth/next';
 import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
+import { Readable } from 'stream';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { sub } from 'date-fns';
 
@@ -12,7 +13,7 @@ export async function POST(request: Request, { params }: { params: { courseId: s
   }
 
   const { courseId } = await params;
-  const { studyMaterials, evaluations, quizzes , subject} = await request.json();
+  const { studyMaterials, evaluations, quizzes , subject, audioDataUri } = await request.json();
 
   if (!studyMaterials && !evaluations && !quizzes) {
     return NextResponse.json({ error: 'No material content provided' }, { status: 400 });
@@ -22,6 +23,8 @@ export async function POST(request: Request, { params }: { params: { courseId: s
     const oauth2Client = new google.auth.OAuth2();
     oauth2Client.setCredentials({ access_token: session.accessToken });
 
+    const drive = google.drive({ version: 'v3', auth: oauth2Client });
+    
     const classroom = google.classroom({ version: 'v1', auth: oauth2Client });
     const results: any = {};
 
@@ -119,6 +122,39 @@ export async function POST(request: Request, { params }: { params: { courseId: s
       }
     }
 
+    // 2. Make the file publicly accessible so students can see it
+    
+    let materialRequestBody: any = {};
+    if (audioDataUri) {
+      console.log('Publishing audio')
+      const audioMimeType = audioDataUri.match(/data:(.*);base64,/)?.[1] || 'audio/webm';
+      const audioBase64Data = audioDataUri.split(',')[1];
+      const audioBuffer = Buffer.from(audioBase64Data, 'base64');
+      const audioStream = Readable.from(audioBuffer);
+
+      const audioDriveResponse = await drive.files.create({
+          requestBody: { name: `Audio Summary - ${Date.now()}.mp3`, mimeType: audioMimeType },
+          media: { mimeType: audioMimeType, body: audioStream },
+      });
+
+      const audioDriveFileId = audioDriveResponse.data.id;
+      if (!audioDriveFileId) throw new Error('Failed to upload audio to Google Drive');
+
+      await drive.permissions.create({ fileId: audioDriveFileId, requestBody: { role: 'reader', type: 'anyone' } });
+      materialRequestBody = {
+          title: `Material with Audio Summary`,
+          description: subject,
+          materials: [
+              { driveFile: { driveFile: { id: audioDriveFileId }, shareMode: 'VIEW' } },
+          ],
+          state: 'PUBLISHED',
+          topicId: topicId
+      };
+    }
+    const classroomResponse = await classroom.courses.courseWorkMaterials.create({
+      courseId: courseId,
+      requestBody: materialRequestBody,
+    });
     return NextResponse.json(results);
   } catch (error: any) {
     console.error('Error processing course material generation:', error);

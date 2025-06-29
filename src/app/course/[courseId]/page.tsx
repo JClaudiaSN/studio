@@ -158,9 +158,9 @@ export default function CoursePage({ params }: { params: { courseId: string } })
                     </div>
                     <div className="grid gap-8 grid-cols-1 md:grid-cols-2">
                         <AltTextGenerator courseId={params.courseId} />
-                        <ContentStructuringTool />
                         <AudioSummaryGenerator courseId={params.courseId} />
                         <CourseGenerator courseId={params.courseId} />
+                        {/* <ContentStructuringTool /> */}
                     </div>
                 </main>
             </SidebarInset>

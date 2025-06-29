@@ -12,6 +12,7 @@ import { generateAltText } from '@/ai/flows/image-alt-text-generation';
 import { ImageIcon, Sparkles, Send, FileText} from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { generateContent } from '@/ai/flows/course-generation';
+import { createAudioDescription } from '@/ai/flows/audio-description-creation';
 
 interface CourseGenerationInput {
   subject: string;
@@ -28,7 +29,9 @@ export function CourseGenerator({ courseId }: { courseId: string}) {
   const [courseSubject, setCourseSubject] = useState('');
   const [courseOutline, setCourseOutline] = useState('');
   const [output, setOutput] = useState<CourseGenerationOutput | null>(null);
+  const [topicText, setTopicText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [audioDataUri, setAudioDataUri] = useState<string | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
   const { toast } = useToast();
 
@@ -46,6 +49,7 @@ export function CourseGenerator({ courseId }: { courseId: string}) {
     try {
       const result = await generateContent({ courseSubject, courseOutline });
       setOutput(result);
+      setTopicText(result.studyMaterials)
     } catch (error) {
       console.error('Failed to generate course:', error);
       // Optionally display an error message to the user
@@ -53,6 +57,31 @@ export function CourseGenerator({ courseId }: { courseId: string}) {
       setIsLoading(false);
     }
   };
+
+  const handleGenerateAudioDescription = async () => {
+    if (!topicText) {
+      toast({
+        title: 'Missing Information',
+        description: 'Por favor, genera el contenido del tema antes de generar el audio.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setIsLoading(true);
+    setAudioDataUri(null);
+    try {
+      const result = await createAudioDescription({ textDescription: topicText });
+      setAudioDataUri(result.audioDataUri);
+    } catch (error) {
+      toast({
+        title: 'Error al generar audio',
+        description: 'Algo salió mal. Inténtalo de nuevo.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   const handlePublish = async () => {
     if (!output) {
@@ -72,7 +101,7 @@ export function CourseGenerator({ courseId }: { courseId: string}) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({...output, subject: courseSubject}),
+        body: JSON.stringify({...output, subject: courseSubject, audioDataUri: audioDataUri}),
       });
 
       toast({
@@ -94,7 +123,7 @@ export function CourseGenerator({ courseId }: { courseId: string}) {
       </CardHeader>
       <CardContent className="grid gap-6">
         <div className="grid gap-2">
-          <Label htmlFor="subject">Materia del Curso</Label>
+          <Label htmlFor="subject">Tema</Label>
           <Input
             id="subject"
             name="subject"
@@ -118,35 +147,47 @@ export function CourseGenerator({ courseId }: { courseId: string}) {
         {output && (
           <div className="grid gap-6">
             <div>
-              <h3 className="text-lg font-semibold">Materiales de Estudio Generados</h3>
+              <h3 className="text-lg font-semibold">Materiales de Lectura Generado</h3>
               <div className="mt-2 p-4 border rounded-md whitespace-pre-wrap">
                 {output.studyMaterials}
               </div>
             </div>
             <div>
-              <h3 className="text-lg font-semibold">Evaluaciones Generadas</h3>
+              <h3 className="text-lg font-semibold">Evaluacion Generada</h3>
               <div className="mt-2 p-4 border rounded-md whitespace-pre-wrap">
                 {output.evaluations}
               </div>
             </div>
             <div>
-              <h3 className="text-lg font-semibold">Cuestionarios Generados</h3>
+              <h3 className="text-lg font-semibold">Cuestionario Generado</h3>
               <div className="mt-2 p-4 border rounded-md whitespace-pre-wrap">
                 {output.quizzes}
               </div>
             </div>
           </div>
+          
         )}
+        {!isLoading && audioDataUri && (
+          <div>
+            <Label>Descripción de Audio Generado</Label>
+            <audio src={audioDataUri} controls className="w-full mt-2" />
+          </div>
+        )}
+        <Button onClick={handleGenerateCourse} disabled={isLoading}>
+                <Sparkles className="mr-3 h-4 w-3" />
+                {isLoading ? 'Analizando...' : 'Generar Contenido'}
+              </Button>
       </CardContent>
       <CardFooter className="flex justify-between">
-              <Button onClick={handleGenerateCourse} disabled={isLoading}>
-       <Sparkles className="mr-2 h-4 w-4" />
-       {isLoading ? 'Analizando...' : 'Obtener Contenido'}
+              
+              <Button onClick={handleGenerateAudioDescription} disabled={!output || isPublishing}>
+                <Sparkles className="mr-3 h-4 w-3" />
+                {isLoading ? 'Generando...' : 'Generar Audio'}
               </Button>
               <Button onClick={handlePublish} disabled={!output || isPublishing}>
-       <Send className="mr-2 h-4 w-4" /> Publicar
+                <Send className="mr-3 h-4 w-3" /> Publicar
               </Button>
-            </CardFooter>
+      </CardFooter>
     </Card>
   );
 }
