@@ -1,11 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import { Label } from '@/components/ui/label';
+import React, { useState } from 'react';
+import Image from 'next/image';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { generateAltText } from '@/ai/flows/image-alt-text-generation';
+import { ImageIcon, Sparkles, Send, FileText} from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { generateContent, GenerateContentInputSchema } from '@/ai/flows/course-generation';
 
 interface CourseGenerationInput {
   subject: string;
@@ -18,34 +24,28 @@ interface CourseGenerationOutput {
   quizzes: string;
 }
 
-export function CourseGenerator() {
-  const [input, setInput] = useState<CourseGenerationInput>({ subject: '', outline: '' });
+export function CourseGenerator({ courseId }: { courseId: string}) {
+  const [courseSubject, setCourseSubject] = useState('');
+  const [courseOutline, setCourseOutline] = useState('');
   const [output, setOutput] = useState<CourseGenerationOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setInput(prev => ({ ...prev, [name]: value }));
-  };
+  const [isPublishing, setIsPublishing] = useState(false);
+  const { toast } = useToast();
 
   const handleGenerateCourse = async () => {
+    if (!courseSubject || !courseOutline) {
+      toast({
+        title: 'No se proporcionó contenido',
+        description: 'Por favor, introduce el contenido del curso para analizar.',
+        variant: 'destructive',
+      });
+      return;
+    }
     setIsLoading(true);
     setOutput(null); // Clear previous output
     try {
-      const response = await fetch('/api/generate-course', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(input),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-
-      const data: CourseGenerationOutput = await response.json();
-      setOutput(data);
+      const result = await generateContent({ courseSubject, courseOutline });
+      setOutput(result);
     } catch (error) {
       console.error('Failed to generate course:', error);
       // Optionally display an error message to the user
@@ -54,10 +54,18 @@ export function CourseGenerator() {
     }
   };
 
+    const handlePublish = () => {
+    toast({
+      title: "¡Publicado!",
+      description: "El contenido estructurado ha sido publicado en tu curso."
+    })
+  }
+
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle>Generador de Curso</CardTitle>
+        <CardTitle className="flex items-center gap-2"><FileText className="text-primary" /> Generacion de contenidos</CardTitle>
+        <CardDescription>Genera tu contenido de texto.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-6">
         <div className="grid gap-2">
@@ -65,8 +73,8 @@ export function CourseGenerator() {
           <Input
             id="subject"
             name="subject"
-            value={input.subject}
-            onChange={handleInputChange}
+            value={courseSubject}
+            onChange={(e) => setCourseSubject(e.target.value)}
             placeholder="Ej. Logaritmos para secundaria"
           />
         </div>
@@ -75,15 +83,12 @@ export function CourseGenerator() {
           <Textarea
             id="outline"
             name="outline"
-            value={input.outline}
-            onChange={handleInputChange}
+            value={courseOutline}
+            onChange={(e) => setCourseOutline(e.target.value)}
             placeholder="Proporciona un esquema simple del contenido del curso..."
             rows={6}
           />
         </div>
-        <Button onClick={handleGenerateCourse} disabled={isLoading}>
-          {isLoading ? 'Generando...' : 'Generar Curso'}
-        </Button>
 
         {output && (
           <div className="grid gap-6">
@@ -108,6 +113,15 @@ export function CourseGenerator() {
           </div>
         )}
       </CardContent>
+      <CardFooter className="flex justify-between">
+              <Button onClick={handleGenerateCourse} disabled={isLoading}>
+       <Sparkles className="mr-2 h-4 w-4" />
+       {isLoading ? 'Analizando...' : 'Obtener Contenido'}
+              </Button>
+              <Button onClick={handlePublish} disabled={!output}>
+       <Send className="mr-2 h-4 w-4" /> Publicar
+              </Button>
+            </CardFooter>
     </Card>
   );
 }
