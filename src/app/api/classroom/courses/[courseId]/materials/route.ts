@@ -11,11 +11,11 @@ export async function POST(request: Request, { params }: { params: { courseId: s
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { courseId } = params;
-  const { imageDataUri, altText } = await request.json();
+  const { courseId } = await params;
+  const { imageDataUri, altText, audioDataUri, description } = await request.json();
 
-  if (!imageDataUri || !altText) {
-    return NextResponse.json({ error: 'Missing imageDataUri or altText' }, { status: 400 });
+  if (!imageDataUri || (!altText && !audioDataUri)) {
+    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
   try {
@@ -33,7 +33,7 @@ export async function POST(request: Request, { params }: { params: { courseId: s
 
     const driveResponse = await drive.files.create({
       requestBody: {
-        name: `AI-Generated Image - ${Date.now()}.png`,
+        name: `Generated Image - ${Date.now()}.png`,
         mimeType: mimeType,
       },
       media: {
@@ -55,27 +55,48 @@ export async function POST(request: Request, { params }: { params: { courseId: s
           type: 'anyone',
         },
       });
-
+    let materialRequestBody: any = {};
     // 3. Create a new material in Google Classroom
-    const material = {
-      title: `AI Generated Image`,
-      description: altText,
-      materials: [
-        {
-          driveFile: {
-            driveFile: {
-              id: driveFileId,
-            },
-            shareMode: 'VIEW',
-          },
-        },
-      ],
-      state: 'PUBLISHED',
-    };
+    if (audioDataUri && description) {
+      // 2a. Upload audio file to Google Drive
+      const audioMimeType = audioDataUri.match(/data:(.*);base64,/)?.[1] || 'audio/webm';
+      const audioBase64Data = audioDataUri.split(',')[1];
+      const audioBuffer = Buffer.from(audioBase64Data, 'base64');
+      const audioStream = Readable.from(audioBuffer);
+
+      const audioDriveResponse = await drive.files.create({
+          requestBody: { name: `Audio Summary - ${Date.now()}.mp3`, mimeType: audioMimeType },
+          media: { mimeType: audioMimeType, body: audioStream },
+      });
+
+      const audioDriveFileId = audioDriveResponse.data.id;
+      if (!audioDriveFileId) throw new Error('Failed to upload audio to Google Drive');
+
+      await drive.permissions.create({ fileId: audioDriveFileId, requestBody: { role: 'reader', type: 'anyone' } });
+      
+      // 2b. Assemble material with both image and audio
+      materialRequestBody = {
+          title: `Material with Audio Summary`,
+          description: description,
+          materials: [
+              { driveFile: { driveFile: { id: driveFileId }, shareMode: 'VIEW' } },
+              { driveFile: { driveFile: { id: audioDriveFileId }, shareMode: 'VIEW' } },
+          ],
+          state: 'PUBLISHED',
+      };
+    } else {
+        // This is the original logic for an image with alt text
+        materialRequestBody = {
+            title: `AI Generated Image`,
+            description: altText,
+            materials: [{ driveFile: { driveFile: { id: driveFileId }, shareMode: 'VIEW' } }],
+            state: 'PUBLISHED',
+        };
+    }
 
     const classroomResponse = await classroom.courses.courseWorkMaterials.create({
       courseId: courseId,
-      requestBody: material,
+      requestBody: materialRequestBody,
     });
 
     return NextResponse.json(classroomResponse.data);

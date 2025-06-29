@@ -12,10 +12,11 @@ import { createAudioSummary } from '@/ai/flows/audio-summary-creation';
 import { Mic, Sparkles, Send } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export function AudioSummaryGenerator() {
+export function AudioSummaryGenerator({ courseId }: { courseId: string }) {
   const [imageDataUri, setImageDataUri] = useState<string | null>(null);
   const [description, setDescription] = useState('');
   const [audioDataUri, setAudioDataUri] = useState<string | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -57,11 +58,38 @@ export function AudioSummaryGenerator() {
     }
   };
 
-  const handlePublish = () => {
-    toast({
-      title: "Published!",
-      description: "The audio summary has been published to your course."
-    })
+  const handlePublish = async () => {
+    if (!imageDataUri || !audioDataUri || !description) return;
+    setIsPublishing(true);
+    try {
+      // const response = await fetch()
+      const response = await fetch(`/api/classroom/courses/${courseId}/materials`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageDataUri, audioDataUri, description }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to publish audio summary');
+      }
+
+      toast({
+        title: "Published!",
+        description: "The audio summary has been published to your course."
+      })
+    } catch (error: any) {
+      console.error(error);
+      toast({
+        title: 'Error Publishing',
+        description: error.message || 'Something went wrong. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsPublishing(false);
+    }
   }
 
   return (
@@ -99,12 +127,13 @@ export function AudioSummaryGenerator() {
         )}
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button onClick={handleGenerateSummary} disabled={!imageDataUri || !description || isLoading}>
+        <Button onClick={handleGenerateSummary} disabled={!imageDataUri || !description || isLoading || isPublishing}>
           <Sparkles className="mr-2 h-4 w-4" />
           {isLoading ? 'Generating...' : 'Generate Audio'}
         </Button>
-        <Button onClick={handlePublish} disabled={!audioDataUri}>
-            <Send className="mr-2 h-4 w-4" /> Publish
+        <Button onClick={handlePublish} disabled={!audioDataUri || isLoading || isPublishing}>
+            <Send className="mr-2 h-4 w-4" /> 
+            {isPublishing ? 'Publishing...' : 'Publish'}
         </Button>
       </CardFooter>
     </Card>
