@@ -32,6 +32,7 @@ import {
 import { AltTextGenerator } from '@/components/features/alt-text-generator';
 import { ContentStructuringTool } from '@/components/features/content-structuring-tool';
 import { AudioSummaryGenerator } from '@/components/features/audio-summary-generator';
+import { CourseGenerator } from '@/components/features/course-generator';
 import { EvaluationGenerator } from '@/components/features/evaluation-generator';
 
 const AppSidebar = () => (
@@ -154,12 +155,13 @@ export default function CoursePage({ params }: { params: { courseId: string } })
                 <main className="p-4 sm:p-6 lg:p-8">
                     <div className="mb-6">
                         <h1 className="text-3xl font-bold">Accessibility Tools</h1>
-                        <p className="text-muted-foreground">Use these AI-powered tools to create accessible materials for course: {params.courseId}</p>
+                        <p className="text-muted-foreground">Utiliza estas herramientas de IA para crear tu curso: {params.courseId}</p>
                     </div>
                     <div className="grid gap-8 grid-cols-1 md:grid-cols-2">
                         <AltTextGenerator courseId={params.courseId} />
+                        <AudioSummaryGenerator courseId={params.courseId} />
+                        <CourseGenerator courseId={params.courseId} />
                         <ContentStructuringTool />
-                        <AudioSummaryGenerator />
                         <EvaluationGenerator courseId={params.courseId} />
                     </div>
                 </main>

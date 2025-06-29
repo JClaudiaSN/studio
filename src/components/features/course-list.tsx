@@ -110,10 +110,10 @@ export function CourseList() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-            <BookOpenCheck /> Your Google Classroom Courses
+            <BookOpenCheck /> Tus clases de Google Classroom
         </CardTitle>
         <CardDescription>
-          Select a course to start generating accessible materials.
+          Seleccionar un curso para empezar a generar material
         </CardDescription>
       </CardHeader>
       <CardContent>

@@ -39,6 +39,7 @@ const prompt = ai.definePrompt({
   input: {schema: ContentStructuringInputSchema},
   output: {schema: ContentStructuringOutputSchema},
   prompt: `You are an AI assistant specialized in accessibility for educational content. Review the following course content and provide specific suggestions to improve its structure for screen reader users. Focus on suggesting the proper use of headings, lists, and semantic HTML elements to enhance navigation and comprehension.
+  Generate all content in SPANISH
 
 Course Content:
 {{{content}}}
