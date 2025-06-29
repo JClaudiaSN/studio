@@ -12,75 +12,63 @@ export async function POST(request: Request, { params }: { params: { courseId: s
   }
 
   const { courseId } = await params;
-  const { type, content } = await request.json();
+  const { imageDataUri, altText, audioDataUri, description } = await request.json();
 
-  if (!type || !content) {
+  if (!imageDataUri || (!altText && !audioDataUri)) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
   try {
     const oauth2Client = new google.auth.OAuth2();
     oauth2Client.setCredentials({ access_token: session.accessToken });
+
+    const drive = google.drive({ version: 'v3', auth: oauth2Client });
     const classroom = google.classroom({ version: 'v1', auth: oauth2Client });
 
-    let responseData;
+    // 1. Upload image to Google Drive
+    const mimeType = imageDataUri.match(/data:(.*);base64,/)?.[1] || 'image/png';
+    const base64Data = imageDataUri.split(',')[1];
+    const buffer = Buffer.from(base64Data, 'base64');
+    const stream = Readable.from(buffer);
 
-    if (type === 'reading') {
-      const materialRequestBody = {
-        title: `Reading Material - ${new Date().toLocaleDateString()}`,
-        description: content,
-        state: 'PUBLISHED',
-      };
-      const classroomResponse = await classroom.courses.courseWorkMaterials.create({
-        courseId: courseId,
-        requestBody: materialRequestBody,
-      });
-      responseData = classroomResponse.data;
-    } else if (type === 'assignment') {
-      const assignmentRequestBody = {
-        title: `Assignment - ${new Date().toLocaleDateString()}`,
-        description: content,
-        workType: 'ASSIGNMENT',
-        state: 'PUBLISHED',
-      };
-      const classroomResponse = await classroom.courses.courseWork.create({
-        courseId: courseId,
-        requestBody: assignmentRequestBody,
-      });
-      responseData = classroomResponse.data;
-    } else if (type === 'quiz') {
-      // For quizzes, you might typically create a Google Form and link it.
-      // For this example, we'll create a CourseWork with a description containing the quiz content.
-      // A more complete implementation would involve Google Forms API or similar.
-      const quizRequestBody = {
-        title: `Quiz - ${new Date().toLocaleDateString()}`,
-        description: content,
-        workType: 'ASSIGNMENT', // Using ASSIGNMENT for simplicity to include description
-        state: 'PUBLISHED',
-      };
-      const classroomResponse = await classroom.courses.courseWork.create({
-        courseId: courseId,
-        requestBody: quizRequestBody,
-      });
-      responseData = classroomResponse.data;
-    } else {
-      return NextResponse.json({ error: 'Invalid material type' }, { status: 400 });
+    const driveResponse = await drive.files.create({
+      requestBody: {
+        name: `Generated Image - ${Date.now()}.png`,
+        mimeType: mimeType,
+      },
+      media: {
+        mimeType: mimeType,
+        body: stream,
+      },
+    });
+
+    const driveFileId = driveResponse.data.id;
+    if (!driveFileId) {
+      throw new Error('Failed to upload file to Google Drive');
     }
+    
+    // 2. Make the file publicly accessible so students can see it
+    await drive.permissions.create({
+        fileId: driveFileId,
+        requestBody: {
+          role: 'reader',
+          type: 'anyone',
+        },
+      });
+    let materialRequestBody: any = {};
+    // 3. Create a new material in Google Classroom
+    if (audioDataUri && description) {
+      // 2a. Upload audio file to Google Drive
+      const audioMimeType = audioDataUri.match(/data:(.*);base64,/)?.[1] || 'audio/webm';
+      const audioBase64Data = audioDataUri.split(',')[1];
+      const audioBuffer = Buffer.from(audioBase64Data, 'base64');
+      const audioStream = Readable.from(audioBuffer);
 
-    return NextResponse.json(responseData);
+      const audioDriveResponse = await drive.files.create({
+          requestBody: { name: `Audio Summary - ${Date.now()}.mp3`, mimeType: audioMimeType },
+          media: { mimeType: audioMimeType, body: audioStream },
+      });
 
-  } catch (error: any) {
-    console.error('Error creating Google Classroom material:', error);
-    const errorMessage = error.response?.data?.error?.message || 'Failed to create material';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
-  }
-}
-
-// This part of the original code seems to be for handling image/audio uploads,
-// which is different from the current request to handle text-based course materials.
-// I'm commenting it out or removing it as it doesn't fit the new requirements.
-/*
-    // Original logic for image/audio upload - commented out
       const audioDriveFileId = audioDriveResponse.data.id;
       if (!audioDriveFileId) throw new Error('Failed to upload audio to Google Drive');
 
@@ -105,4 +93,16 @@ export async function POST(request: Request, { params }: { params: { courseId: s
             state: 'PUBLISHED',
         };
     }
-*/
+
+    const classroomResponse = await classroom.courses.courseWorkMaterials.create({
+      courseId: courseId,
+      requestBody: materialRequestBody,
+    });
+
+    return NextResponse.json(classroomResponse.data);
+  } catch (error: any) {
+    console.error('Error creating Google Classroom material:', error);
+    const errorMessage = error.response?.data?.error?.message || 'Failed to create material';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
+  }
+}
