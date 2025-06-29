@@ -92,12 +92,12 @@ export function AltTextGenerator({ courseId }: { courseId: string }) {
   return (
     <Card className="w-full shadow-md hover:shadow-lg transition-shadow duration-300">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2"><ImageIcon className="text-primary" /> Generador de Texto Alternativo para Imágenes</CardTitle>
+        <CardTitle className="flex items-center gap-2"><ImageIcon className="text-primary" /> Generador de Texto para Imágenes</CardTitle>
         <CardDescription>Sube una imagen y nuestra IA generará un texto alternativo descriptivo para la accesibilidad.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="image-upload">Upload Image</Label>
+          <Label htmlFor="image-upload">Subir Imagen</Label>
           <Input id="image-upload" type="file" accept="image/*" onChange={handleFileChange} className="file:text-primary-foreground" />
         </div>
         {imageDataUri && (
@@ -111,7 +111,7 @@ export function AltTextGenerator({ courseId }: { courseId: string }) {
             <Label htmlFor="alt-text-output">Texto Alternativo Generado por IA (Editable)</Label>
             <Textarea
               id="alt-text-output"
-              placeholder="AI-generated alt text will appear here..."
+              placeholder="Texto generado por IA aparecerá aquí..."
               value={altText}
               onChange={(e) => setAltText(e.target.value)}
               rows={3}

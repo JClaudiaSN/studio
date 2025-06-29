@@ -36,6 +36,8 @@ const prompt = ai.definePrompt({
 
   Given the following image, generate an alt-text description that accurately conveys the content and purpose of the image.
 
+  You have to return the text in Spanish.
+
   Image: {{media url=photoDataUri}}
   `,
 });
