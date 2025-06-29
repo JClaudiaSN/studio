@@ -1,4 +1,5 @@
-# A11yCourseGen AI
+# Visionary Education Menthor-VEM 
+# Equipo Eiffel Tower
 
 This is a Next.js application built in Firebase Studio that uses AI to help educators create accessible course materials for Google Classroom.
 
