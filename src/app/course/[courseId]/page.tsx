@@ -32,6 +32,7 @@ import {
 import { AltTextGenerator } from '@/components/features/alt-text-generator';
 import { ContentStructuringTool } from '@/components/features/content-structuring-tool';
 import { AudioSummaryGenerator } from '@/components/features/audio-summary-generator';
+import { EvaluationGenerator } from '@/components/features/evaluation-generator';
 
 const AppSidebar = () => (
     <Sidebar>
@@ -158,7 +159,8 @@ export default function CoursePage({ params }: { params: { courseId: string } })
                     <div className="grid gap-8 grid-cols-1 md:grid-cols-2">
                         <AltTextGenerator courseId={params.courseId} />
                         <ContentStructuringTool />
-                        <AudioSummaryGenerator courseId={params.courseId} />
+                        <AudioSummaryGenerator />
+                        <EvaluationGenerator courseId={params.courseId} />
                     </div>
                 </main>
             </SidebarInset>
