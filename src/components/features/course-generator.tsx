@@ -54,13 +54,56 @@ export function CourseGenerator({ courseId }: { courseId: string}) {
     }
   };
 
-    const handlePublish = () => {
-    toast({
-      title: "¡Publicado!",
-      description: "El contenido estructurado ha sido publicado en tu curso."
-    })
-  }
+  const handlePublish = async () => {
+    if (!output) {
+      toast({
+        title: "No content to publish",
+        description: "Generate content first before publishing.",
+        variant: "destructive",
+      });
+      return;
+    }
 
+    setIsPublishing(true);
+    try {
+      // Publish Study Materials (Readings)
+      await fetch(`/api/classroom/courses/${courseId}/materials`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ type: 'reading', content: output.studyMaterials }),
+      });
+
+      // Publish Evaluations (Assignments)
+      await fetch(`/api/classroom/courses/${courseId}/materials`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ type: 'assignment', content: output.evaluations }),
+      });
+
+      // Publish Quizzes (Quizzes)
+      await fetch(`/api/classroom/courses/${courseId}/materials`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ type: 'quiz', content: output.quizzes }),
+      });
+
+      toast({
+        title: "¡Publicado!",
+        description: "El contenido estructurado ha sido publicado en tu curso.",
+      });
+    } catch (error) {
+      console.error('Failed to publish content:', error);
+      toast({ title: 'Publication failed', description: 'There was an error publishing the content.', variant: 'destructive' });
+    } finally {
+      setIsPublishing(false);
+    }
+  }
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
@@ -118,7 +161,7 @@ export function CourseGenerator({ courseId }: { courseId: string}) {
        <Sparkles className="mr-2 h-4 w-4" />
        {isLoading ? 'Analizando...' : 'Obtener Contenido'}
               </Button>
-              <Button onClick={handlePublish} disabled={!output}>
+              <Button onClick={handlePublish} disabled={!output || isPublishing}>
        <Send className="mr-2 h-4 w-4" /> Publicar
               </Button>
             </CardFooter>
