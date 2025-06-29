@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { generateAltText } from '@/ai/flows/image-alt-text-generation';
 import { ImageIcon, Sparkles, Send, FileText} from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { generateContent, GenerateContentInputSchema } from '@/ai/flows/course-generation';
+import { generateContent } from '@/ai/flows/course-generation';
 
 interface CourseGenerationInput {
   subject: string;
@@ -72,7 +72,7 @@ export function CourseGenerator({ courseId }: { courseId: string}) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(output),
+        body: JSON.stringify({...output, subject: courseSubject}),
       });
 
       toast({
