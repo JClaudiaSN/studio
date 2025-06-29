@@ -52,12 +52,12 @@ export function ContentStructuringTool() {
   return (
     <Card className="w-full shadow-md hover:shadow-lg transition-shadow duration-300">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2"><FileText className="text-primary" /> Content Structuring Suggestions</CardTitle>
+        <CardTitle className="flex items-center gap-2"><FileText className="text-primary" />Sugerencia de Contenido</CardTitle>
         <CardDescription>Optimiza tu contenido de texto para lectores de pantalla con mejoras estructurales impulsadas por IA.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="course-content">Your Course Content</Label>
+          <Label htmlFor="course-content">Contenido de tu Curso</Label>
           <Textarea
             id="course-content"
             placeholder="Pega aquí el contenido de tu curso..."

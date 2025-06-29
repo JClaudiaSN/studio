@@ -100,7 +100,7 @@ export function AudioSummaryGenerator({ courseId }: { courseId: string }) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="chart-upload">Upload Chart/Diagram</Label>
+          <Label htmlFor="chart-upload">Subir Diagrama</Label>
           <Input id="chart-upload" type="file" accept="image/*" onChange={handleFileChange} />
         </div>
         {imageDataUri && (
@@ -112,7 +112,7 @@ export function AudioSummaryGenerator({ courseId }: { courseId: string }) {
           <Label htmlFor="chart-description">Descripción y Puntos Clave</Label>
           <Textarea
             id="chart-description"
-            placeholder="Describe the chart and what students should learn from it..."
+            placeholder="Describe la imagen o aquello que los estudiantes deberían aprender de esto..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
