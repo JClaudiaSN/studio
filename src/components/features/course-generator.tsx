@@ -67,30 +67,12 @@ export function CourseGenerator({ courseId }: { courseId: string}) {
     setIsPublishing(true);
     try {
       // Publish Study Materials (Readings)
-      await fetch(`/api/classroom/courses/${courseId}/materials`, {
+      await fetch(`/api/classroom/courses/${courseId}/courseMaterials`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ type: 'reading', content: output.studyMaterials }),
-      });
-
-      // Publish Evaluations (Assignments)
-      await fetch(`/api/classroom/courses/${courseId}/materials`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ type: 'assignment', content: output.evaluations }),
-      });
-
-      // Publish Quizzes (Quizzes)
-      await fetch(`/api/classroom/courses/${courseId}/materials`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ type: 'quiz', content: output.quizzes }),
+        body: JSON.stringify(output),
       });
 
       toast({
