@@ -7,8 +7,9 @@
  * - GenerateEvaluationOutput - The return type for the generateEvaluation function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { z } from 'genkit';
+import { textToSpeech } from 'genkit/ext/text-to-speech'; // Assuming this is the correct import
 
 const GenerateEvaluationInputSchema = z.object({
   topic: z
@@ -21,14 +22,12 @@ export type GenerateEvaluationInput = z.infer<typeof GenerateEvaluationInputSche
 const GenerateEvaluationOutputSchema = z.object({
   title: z
     .string()
-    .describe(
-      'A suitable title for the quiz, based on the topic.'
-    ),
-    quizContent: z
-    .string()
-    .describe(
-      'The full quiz content, including questions, multiple-choice options, and a separate answer key at the end, formatted as plain text.'
-    ),
+    .describe('A suitable title for the quiz, based on the topic.'),
+  questions: z.array(z.object({
+    questionText: z.string().describe('The text of the quiz question.'),
+    correctAnswer: z.string().describe('The correct answer for the question (e.g., "A", "B", "C", or "D").'),
+    audioDataUri: z.string().describe('The audio data URI for the question text.'),
+  })),
 });
 export type GenerateEvaluationOutput = z.infer<typeof GenerateEvaluationOutputSchema>;
 
@@ -40,19 +39,28 @@ export async function generateEvaluation(
 
 const prompt = ai.definePrompt({
   name: 'generateEvaluationPrompt',
-  input: {schema: GenerateEvaluationInputSchema},
-  output: {schema: GenerateEvaluationOutputSchema},
+  input: { schema: GenerateEvaluationInputSchema },
+  output: { schema: GenerateEvaluationOutputSchema },
   prompt: `You are an expert educator creating a quiz.
-  
+
   Generate a multiple-choice quiz about the following topic: {{{topic}}}
-  
+
   The quiz should have exactly {{{numQuestions}}} questions.
-  
+
   For each question, provide 4 options (A, B, C, D).
-  
-  Format the entire output as a single block of plain text.
-  At the end of the quiz, provide a separate "Answer Key" section that lists the correct answers for all questions.
-  Do not use markdown or any other special formatting. Just plain text.
+
+  Format the output as a JSON object with two fields: "title" and "questions".
+  The "title" field should be a suitable title for the quiz.
+  The "questions" field should be an array of objects, where each object represents a question.
+  Each question object should have two fields: "questionText" and "correctAnswer".
+  The "questionText" should include the question and the four multiple-choice options.
+  The "correctAnswer" should be the letter (A, B, C, or D) corresponding to the correct answer.
+
+  Example JSON structure:
+  {
+    "title": "Quiz Title",
+    "questions": [{"questionText": "Question 1 text with options A, B, C, D", "correctAnswer": "A"}, ...]
+  }
 `,
 });
 
@@ -63,7 +71,34 @@ const generateEvaluationFlow = ai.defineFlow(
     outputSchema: GenerateEvaluationOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    const { text } = await prompt(input);
+    // Parse the JSON output from the prompt
+    const output: GenerateEvaluationOutput = JSON.parse(text);
+
+    // Generate audio for each question
+    for (const question of output.questions) {
+      const { media } = await ai.generate({
+        model: textToSpeech('googleai/gemini-2.5-flash-preview-tts'), // Using the imported model
+        config: {
+          responseModalities: ['AUDIO'],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: { voiceName: 'Algenib' },
+            },
+          },
+        },
+        prompt: question.questionText,
+      });
+
+      if (media && media.url) {
+        question.audioDataUri = media.url;
+      } else {
+        console.error('Failed to generate audio for question:', question.questionText);
+        // Handle cases where audio generation fails, perhaps by providing a default or error indicator
+        question.audioDataUri = ''; // Or a placeholder
+      }
+    }
+
+    return output;
   }
 );
