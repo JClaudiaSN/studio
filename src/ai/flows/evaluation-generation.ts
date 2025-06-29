@@ -9,6 +9,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { textToSpeech } from '@genkit-ai/googleai'; // Assuming this is the correct import
 
 const GenerateEvaluationInputSchema = z.object({
   topic: z

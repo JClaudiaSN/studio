@@ -1,6 +1,6 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { textToSpeech } from 'genkit/ext/text-to-speech'; // Assuming this is the correct import
+import { textToSpeech } from '@genkit-ai/googleai'; // Corrected import
 
 const EvaluateResponseInputSchema = z.object({
   question: z.object({
@@ -58,7 +58,7 @@ export const evaluateResponseFlow = ai.defineFlow(
 
     // Generate audio for the feedback text
     const { media } = await ai.generate({
-      model: textToSpeech('googleai/gemini-2.5-flash-preview-tts'), // Using the imported model
+      model: textToSpeech('googleai/gemini-2.5-flash-preview-tts'), // Using the imported function
       config: {
         responseModalities: ['AUDIO'],
         speechConfig: {
